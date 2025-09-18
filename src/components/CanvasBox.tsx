@@ -1,6 +1,7 @@
 import React from 'react';
 import { useCanvas } from '../context/CanvasContext';
-import { getTextColorClass } from '../utils/colors';
+import { getTextColorClass, renderColoredText } from '../utils/colors';
+import DOMPurify from 'dompurify';
 
 interface CanvasBoxProps {
   title: string;
@@ -32,9 +33,19 @@ const CanvasBox: React.FC<CanvasBoxProps> = ({ title, id, number, subtitle }) =>
       </div>
       <div className="pt-2">
         {fields[id]?.content ? (
-          <p className={`text-xs whitespace-pre-wrap break-words overflow-y-auto max-h-[150px] scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900 ${getTextColorClass(fields[id]?.color, isDarkMode)}`}>
-            {fields[id].content}
-          </p>
+          <div 
+            dangerouslySetInnerHTML={{ 
+              __html: DOMPurify.sanitize(
+                renderColoredText(fields[id].content, isDarkMode),
+                { 
+                  ALLOW_UNKNOWN_PROTOCOLS: true, 
+                  ADD_ATTR: ['class', 'style'],
+                  ALLOWED_ATTR: ['class', 'style'],
+                  KEEP_CONTENT: true
+                }
+              ) 
+            }}
+          />
         ) : (
           <p className={`text-center italic text-xs ${isDarkMode ? 'text-purple-400' : 'text-purple-500'}`}>Clique para editar</p>
         )}

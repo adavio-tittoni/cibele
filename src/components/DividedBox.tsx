@@ -1,5 +1,7 @@
 import React from 'react';
 import { useCanvas } from '../context/CanvasContext';
+import { renderColoredText } from '../utils/colors';
+import DOMPurify from 'dompurify';
 
 interface DividedBoxProps {
   title1: string;
@@ -25,7 +27,7 @@ const DividedBox: React.FC<DividedBoxProps> = ({
       case 'blue': return 'text-blue-500';
       case 'red': return 'text-red-500';
       case 'purple': return 'text-purple-500';
-      default: return isDarkMode ? 'text-white' : 'text-gray-900';
+      default: return ''; // Removida a cor padrão
     }
   };
 
@@ -48,9 +50,20 @@ const DividedBox: React.FC<DividedBoxProps> = ({
           <h3 className={`font-bold ${isCentral ? 'text-center' : ''} mb-4 mt-4 text-sm leading-tight px-1`}>{title1}</h3>
           <div className="flex-grow pt-1 text-xs px-1">
             {fields[id1]?.content ? (
-              <p className={`whitespace-pre-wrap break-words overflow-y-auto max-h-[150px] scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900 leading-relaxed ${getTextColorClass(fields[id1]?.color)}`}>
-                {fields[id1].content}
-              </p>
+              <div 
+                className="whitespace-pre-wrap break-words overflow-y-auto max-h-[150px] scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900 leading-relaxed"
+                dangerouslySetInnerHTML={{ 
+                  __html: DOMPurify.sanitize(
+                    renderColoredText(fields[id1].content, isDarkMode),
+                    { 
+                      ALLOW_UNKNOWN_PROTOCOLS: true, 
+                      ADD_ATTR: ['class', 'style'],
+                      ALLOWED_ATTR: ['class', 'style'],
+                      KEEP_CONTENT: true
+                    }
+                  ) 
+                }}
+              />
             ) : (
               <p className={`text-center italic ${isDarkMode ? 'text-purple-400' : 'text-purple-500'}`}>Clique para editar</p>
             )}
@@ -66,9 +79,20 @@ const DividedBox: React.FC<DividedBoxProps> = ({
           <h3 className={`font-bold ${isCentral ? 'text-center' : ''} mb-3 mt-6 text-sm leading-tight px-1`}>{title2}</h3>
           <div className="flex-grow pt-1 text-xs px-1">
             {fields[id2]?.content ? (
-              <p className={`whitespace-pre-wrap break-words overflow-y-auto max-h-[150px] scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900 leading-relaxed ${getTextColorClass(fields[id2]?.color)}`}>
-                {fields[id2].content}
-              </p>
+              <div 
+                className="whitespace-pre-wrap break-words overflow-y-auto max-h-[150px] scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900 leading-relaxed"
+                dangerouslySetInnerHTML={{ 
+                  __html: DOMPurify.sanitize(
+                    renderColoredText(fields[id2].content, isDarkMode),
+                    { 
+                      ALLOW_UNKNOWN_PROTOCOLS: true, 
+                      ADD_ATTR: ['class', 'style'],
+                      ALLOWED_ATTR: ['class', 'style'],
+                      KEEP_CONTENT: true
+                    }
+                  ) 
+                }}
+              />
             ) : (
               <p className={`text-center italic ${isDarkMode ? 'text-purple-400' : 'text-purple-500'}`}>Clique para editar</p>
             )}

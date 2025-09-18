@@ -18,7 +18,6 @@ interface CanvasContextType {
 
 const defaultFields: Record<string, FieldData> = {
   'company-name': { content: '' },
-  'company-name-logo': { content: '' },
   'project-leader': { content: '' },
   'management-team': { content: '' },
   'contact-point': { content: '' },
@@ -53,7 +52,17 @@ const CanvasContext = createContext<CanvasContextType>({
 export const useCanvas = () => useContext(CanvasContext);
 
 export const CanvasProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [fields, setFields] = useState<Record<string, FieldData>>(defaultFields);
+  const [fields, setFields] = useState<Record<string, FieldData>>({
+    ...defaultFields,
+    'corporate-strategy': {
+      content: 'Esta é uma [[blue]]estratégia atual[[/blue]] da empresa. Temos alguns [[red]]gaps importantes[[/red]] que precisam ser resolvidos. Aqui estão algumas [[purple]]soluções propostas[[/purple]] para melhorar.',
+      color: undefined
+    },
+    'objectives-value': {
+      content: 'Objetivos [[blue]]já implementados[[/blue]] incluem automação. [[red]]Problemas identificados[[/red]]: falta de integração. [[purple]]Insights para melhoria[[/purple]]: usar IA.',
+      color: undefined
+    }
+  });
   const [activeField, setActiveField] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
@@ -61,7 +70,8 @@ export const CanvasProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const savedFields = localStorage.getItem('innovAI-canvas');
     if (savedFields) {
       try {
-        setFields(JSON.parse(savedFields));
+        const parsedFields = JSON.parse(savedFields);
+        setFields(parsedFields);
       } catch (e) {
         console.error('Error loading saved data', e);
       }

@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { useCanvas } from '../context/CanvasContext';
-import { getTextColorClass, colorOptions } from '../utils/colors';
+// Adicionar à importação
+import { getTextColorClass, getColorOptions, suggestColorFromText, applyColorToText, renderColoredText } from '../utils/colors';
 import { FieldColor } from '../types';
+import DOMPurify from 'dompurify';
 
 const EditModal: React.FC = () => {
   const { fields, updateField, updateFieldColor, activeField, setActiveField, isDarkMode } = useCanvas();
   const [value, setValue] = useState('');
   const [selectedColor, setSelectedColor] = useState<FieldColor>();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [selection, setSelection] = useState<{start: number, end: number}>({start: 0, end: 0});
 
   useEffect(() => {
     if (activeField && textareaRef.current) {
@@ -22,9 +25,11 @@ const EditModal: React.FC = () => {
   const centralFields = ['company-name', 'project-leader', 'management-team', 'contact-point', 'start-date', 'end-date'];
   const isCentralField = activeField ? centralFields.includes(activeField) : false;
 
+  // Modificar a função handleSave para processar o texto antes de salvar
   const handleSave = () => {
     if (activeField) {
-      console.log('Saving field:', activeField, 'content:', value, 'color:', selectedColor);
+      console.log('Saving field:', activeField, 'content:', value);
+      // Salva o texto com as marcações especiais
       updateField(activeField, value);
       // Só atualiza a cor se não for um campo central
       if (!isCentralField) {
@@ -39,6 +44,26 @@ const EditModal: React.FC = () => {
       setActiveField(null);
     } else if (e.key === 'Enter' && e.ctrlKey) {
       handleSave();
+    }
+  };
+
+  const handleTextSelection = () => {
+    if (textareaRef.current) {
+      const start = textareaRef.current.selectionStart;
+      const end = textareaRef.current.selectionEnd;
+      setSelection({start, end});
+    }
+  };
+
+  const applyColorToSelection = (color: FieldColor) => {
+    if (selection.start !== selection.end && !isCentralField) {
+      const newText = applyColorToText(value, selection, color);
+      setValue(newText);
+      // Resetar a seleção após aplicar a cor
+      setSelection({start: 0, end: 0});
+    } else {
+      // Se não houver seleção, define a cor para todo o campo
+      setSelectedColor(color);
     }
   };
 
@@ -61,37 +86,49 @@ const EditModal: React.FC = () => {
         {!isCentralField && (
           <div className="mb-6">
             <div className="flex gap-2 mb-2">
-              <button
-                onClick={() => setSelectedColor(undefined)}
-                className={`flex-1 px-2 py-1 rounded text-xs ${
-                  isDarkMode ? 'text-white bg-gray-700' : 'text-gray-900 bg-gray-200'
-                } ${!selectedColor ? 'ring-2 ring-offset-2' : 'opacity-70 hover:opacity-100'}`}
-              >
-                Cor Padrão
-              </button>
-              {colorOptions.map(({ value, label, bgClass }) => (
+              {getColorOptions(isDarkMode).map(({ value, label, bgClass }) => (
                 <button
                   key={value}
-                  onClick={() => setSelectedColor(value)}
+                  onClick={() => {
+                    // Se houver texto selecionado, aplica a cor apenas à seleção
+                    if (selection.start !== selection.end) {
+                      applyColorToSelection(value);
+                    } else {
+                      setSelectedColor(value);
+                    }
+                  }}
                   className={`flex-1 px-2 py-1 rounded text-xs text-white ${bgClass} ${
-                    selectedColor === value ? 'ring-2 ring-offset-2' : 'opacity-70 hover:opacity-100'
+                    selectedColor === value && selection.start === selection.end ? 'ring-2 ring-offset-2' : 'opacity-80 hover:opacity-100'
                   }`}
                 >
                   {label}
                 </button>
               ))}
             </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {selection.start !== selection.end 
+                ? "Selecione uma cor para aplicar ao texto selecionado" 
+                : "Selecione uma cor para todo o texto ou selecione um trecho específico"}
+            </p>
           </div>
         )}
 
         <textarea
           ref={textareaRef}
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => {
+            setValue(e.target.value);
+            // Sugerir cor com base no texto se não for um campo central
+            if (!isCentralField && !selectedColor) {
+              const suggestedColor = suggestColorFromText(e.target.value);
+              if (suggestedColor) setSelectedColor(suggestedColor);
+            }
+          }}
+          onSelect={handleTextSelection}
           onKeyDown={handleKeyDown}
           className={`w-full h-40 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none ${
             isDarkMode ? 'bg-purple-900 border-purple-700' : 'bg-white border-purple-200'
-          } border ${getTextColorClass(isCentralField ? undefined : selectedColor, isDarkMode)}`}
+          } border`}
           placeholder="Digite seu conteúdo aqui..."
         />
         
