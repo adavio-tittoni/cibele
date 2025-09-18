@@ -62,15 +62,7 @@ export const useCanvas = () => useContext(CanvasContext);
 
 export const CanvasProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [fields, setFields] = useState<Record<string, FieldData>>({
-    ...defaultFields,
-    'corporate-strategy': {
-      content: 'Esta é uma [[blue]]estratégia atual[[/blue]] da empresa. Temos alguns [[red]]gaps importantes[[/red]] que precisam ser resolvidos. Aqui estão algumas [[purple]]soluções propostas[[/purple]] para melhorar.',
-      color: undefined
-    },
-    'objectives-value': {
-      content: 'Objetivos [[blue]]já implementados[[/blue]] incluem automação. [[red]]Problemas identificados[[/red]]: falta de integração. [[purple]]Insights para melhoria[[/purple]]: usar IA.',
-      color: undefined
-    }
+    ...defaultFields
   });
   const [activeField, setActiveField] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(true);

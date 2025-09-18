@@ -44,11 +44,8 @@ const CentralBox: React.FC<CentralBoxProps> = ({ title, id }) => {
                       'bg-gray-400'
                     }`}
                   />
-                  <span className={`text-xs text-center ${
-                    bullet.color === 'blue' ? 'text-blue-400' :
-                    bullet.color === 'red' ? 'text-red-400' :
-                    bullet.color === 'purple' ? 'text-purple-400' :
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  <span className={`text-xs text-center font-bold ${
+                    isDarkMode ? 'text-white' : 'text-black'
                   }`}>
                     {bullet.text}
                   </span>

@@ -166,7 +166,27 @@ const CompanyInfo: React.FC<CompanyInfoProps> = ({ title, id }) => {
           onClick={() => setActiveField(id)}
         >
           <div className="h-full flex items-center justify-center">
-            {fields[id]?.content ? (
+            {fields[id]?.bulletPoints && fields[id].bulletPoints!.length > 0 ? (
+              <div className="space-y-2 w-full">
+                {fields[id].bulletPoints!.map((bullet) => (
+                  <div key={bullet.id} className="flex items-start gap-2 justify-center">
+                    <div 
+                      className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                        bullet.color === 'blue' ? 'bg-blue-500' :
+                        bullet.color === 'red' ? 'bg-red-500' :
+                        bullet.color === 'purple' ? 'bg-purple-500' :
+                        'bg-gray-400'
+                      }`}
+                    />
+                    <span className={`text-xs text-center font-bold ${
+                      isDarkMode ? 'text-white' : 'text-black'
+                    }`}>
+                      {bullet.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : fields[id]?.content ? (
               <p className={`text-center whitespace-pre-wrap text-xs break-words overflow-y-auto max-h-[100px] scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900 ${getTextColorClass(fields[id]?.color)}`}>
                 {fields[id].content}
               </p>
