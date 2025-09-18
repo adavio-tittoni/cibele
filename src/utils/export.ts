@@ -43,7 +43,7 @@ export const exportToPDF = async (elementId: string, filename: string) => {
 
     // Gerar canvas capturando o body inteiro
     const canvas = await html2canvas(document.body, {
-      scale: 2,
+      scale: 2, // Voltar para escala 2 para evitar problemas
       backgroundColor: '#1E1E2F',
       useCORS: true,
       allowTaint: true,
@@ -53,6 +53,12 @@ export const exportToPDF = async (elementId: string, filename: string) => {
       windowHeight: height,
       width: width,
       height: height,
+      letterRendering: true, // Melhor renderização de texto
+      foreignObjectRendering: false, // Evitar problemas de posicionamento
+      imageTimeout: 0, // Sem timeout para imagens
+      removeContainer: true, // Remover container temporário
+      logging: false, // Desabilitar logs
+      proxy: undefined, // Evitar problemas de proxy
       onclone: (doc) => {
         const clonedElement = doc.getElementById(elementId);
         if (clonedElement) {
@@ -62,6 +68,42 @@ export const exportToPDF = async (elementId: string, filename: string) => {
         doc.body.style.height = `${height}px`;
         doc.documentElement.style.width = `${width}px`;
         doc.documentElement.style.height = `${height}px`;
+        
+        // Aplicar correções sutis para alinhamento vertical de texto
+        doc.body.style.lineHeight = '1.25';
+        
+        // Aplicar correções específicas para elementos de texto
+        const textElements = doc.querySelectorAll('body, p, li, h1, h2, h3, h4, h5, h6, div, span');
+        textElements.forEach((el: any) => {
+          el.style.lineHeight = '1.25';
+          el.style.verticalAlign = 'baseline';
+          // Compensação sutil para baseline
+          el.style.transform = 'translateY(-0.5px)';
+        });
+        
+        // Definir vertical-align para imagens e ícones
+        const inlineElements = doc.querySelectorAll('img, svg, i, .icon');
+        inlineElements.forEach((el: any) => {
+          el.style.verticalAlign = 'text-top';
+        });
+        
+        // Aplicar estilos de renderização otimizados
+        const allElements = doc.querySelectorAll('*');
+        allElements.forEach((el: any) => {
+          if (el.textContent && el.textContent.trim()) {
+            el.style.textRendering = 'optimizeLegibility';
+            el.style.fontKerning = 'normal';
+            el.style.webkitFontSmoothing = 'subpixel-antialiased';
+          }
+        });
+        
+        // Forçar recálculo de layout
+        doc.body.offsetHeight;
+        
+        // Aguardar renderização
+        setTimeout(() => {
+          doc.body.offsetHeight;
+        }, 100);
       }
     });
 
@@ -328,30 +370,31 @@ export const exportInsightsToXLS = async (elementId: string, filename: string) =
     // Adicionar cabeçalhos
     data.push(['Campo', 'Insights']);
     
-    // Adicionar dados apenas dos campos que contêm insights roxos
+    // Adicionar dados apenas dos campos que contêm bullet points roxos
     let hasInsights = false;
     
     Object.keys(fieldTitles).forEach(fieldId => {
       const title = fieldTitles[fieldId];
-      const content = fieldsData[fieldId]?.content || '';
+      const fieldData = fieldsData[fieldId];
       
-      // Extrair apenas textos com tag [[purple]]
-      const purpleMatches = content.match(/\[\[purple\]\](.*?)\[\[\/purple\]\]/g);
-      
-      if (purpleMatches && purpleMatches.length > 0) {
-        const insights = purpleMatches.map(match => 
-          match.replace(/\[\[purple\]\]|\[\[\/purple\]\]/g, '').trim()
-        ).filter(text => text.length > 0);
+      // Verificar se o campo tem bullet points
+      if (fieldData?.bulletPoints && Array.isArray(fieldData.bulletPoints)) {
+        // Filtrar apenas bullet points roxos
+        const purpleBullets = fieldData.bulletPoints.filter((bullet: any) => bullet.color === 'purple');
         
-        if (insights.length > 0) {
-          data.push([title, insights.join(' | ')]);
-          hasInsights = true;
+        if (purpleBullets.length > 0) {
+          const insights = purpleBullets.map((bullet: any) => bullet.text).filter((text: string) => text && text.trim().length > 0);
+          
+          if (insights.length > 0) {
+            data.push([title, insights.join(' | ')]);
+            hasInsights = true;
+          }
         }
       }
     });
 
     if (!hasInsights) {
-      alert('Nenhum insight encontrado. Adicione textos com formatação roxa [[purple]]texto[[/purple]] para exportar.');
+      alert('Nenhum insight encontrado. Adicione bullet points com cor roxa para exportar.');
       return;
     }
 
@@ -428,27 +471,28 @@ export const exportInsightsToPDF = async (elementId: string, filename: string) =
     
     Object.keys(fieldTitles).forEach(fieldId => {
       const title = fieldTitles[fieldId];
-      const content = fieldsData[fieldId]?.content || '';
+      const fieldData = fieldsData[fieldId];
       
-      // Extrair apenas textos com tag [[purple]]
-      const purpleMatches = content.match(/\[\[purple\]\](.*?)\[\[\/purple\]\]/g);
-      
-      if (purpleMatches && purpleMatches.length > 0) {
-        const insightTexts = purpleMatches.map(match => 
-          match.replace(/\[\[purple\]\]|\[\[\/purple\]\]/g, '').trim()
-        ).filter(text => text.length > 0);
+      // Verificar se o campo tem bullet points
+      if (fieldData?.bulletPoints && Array.isArray(fieldData.bulletPoints)) {
+        // Filtrar apenas bullet points roxos
+        const purpleBullets = fieldData.bulletPoints.filter((bullet: any) => bullet.color === 'purple');
         
-        if (insightTexts.length > 0) {
-          insights.push({
-            field: title,
-            content: insightTexts.join(' | ')
-          });
+        if (purpleBullets.length > 0) {
+          const insightTexts = purpleBullets.map((bullet: any) => bullet.text).filter((text: string) => text && text.trim().length > 0);
+          
+          if (insightTexts.length > 0) {
+            insights.push({
+              field: title,
+              content: insightTexts.join(' | ')
+            });
+          }
         }
       }
     });
 
     if (insights.length === 0) {
-      alert('Nenhum insight encontrado. Adicione textos com formatação roxa [[purple]]texto[[/purple]] para exportar.');
+      alert('Nenhum insight encontrado. Adicione bullet points com cor roxa para exportar.');
       return;
     }
 
@@ -458,10 +502,14 @@ export const exportInsightsToPDF = async (elementId: string, filename: string) =
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 20;
-    const contentWidth = pageWidth - (margin * 2);
+    const margin = 25; // Aumentado de 20 para 25
+    const contentWidth = pageWidth - (margin * 2); // Largura efetiva reduzida
     
     let currentY = margin;
+    
+    // Definir fonte padrão no início
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(12);
 
     // Título do documento
     pdf.setFontSize(18);
@@ -479,38 +527,108 @@ export const exportInsightsToPDF = async (elementId: string, filename: string) =
     // Processar cada insight
     pdf.setFontSize(12);
     
+    // Definir posição fixa para o texto (fora do loop)
+    let textStartX = margin + 15; // Margem fixa de 15mm para o texto
+    
     insights.forEach((insight, index) => {
-      // Verificar se precisa de nova página
-      if (currentY > pageHeight - 40) {
+      // Título do campo com alinhamento fixo
+      pdf.setFont('helvetica', 'bold');
+      const numberText = `${index + 1}.`;
+      const fieldText = insight.field;
+      
+      // Verificar se precisa de nova página para o título
+      if (currentY > pageHeight - 50) {
         pdf.addPage();
         currentY = margin;
+        // Redefinir fonte após nova página
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(12);
       }
-
-      // Título do campo
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(`${index + 1}. ${insight.field}`, margin, currentY);
-      currentY += 8;
+      
+      // Posicionar número com largura fixa
+      pdf.text(numberText, margin, currentY - 2);
+      
+      // Posicionar texto do campo com margem fixa (independente do tamanho do número)
+      pdf.text(fieldText, textStartX, currentY - 2);
+      currentY += 10;
 
       // Conteúdo do insight
       pdf.setFont('helvetica', 'normal');
       
-      // Quebrar texto em linhas para caber na página
-      const lines = pdf.splitTextToSize(insight.content, contentWidth);
+      // Quebrar texto em linhas para caber na página com margem de segurança adicional
+      const textWidth = contentWidth - 25; // Ajustar para considerar a margem do texto alinhado
       
-      // Verificar se as linhas cabem na página atual
-      const linesHeight = lines.length * 6;
-      if (currentY + linesHeight > pageHeight - margin) {
+      // Função personalizada para quebrar texto preservando palavras
+      const breakTextIntoLines = (text: string, maxWidth: number): string[] => {
+        const words = text.split(' ');
+        const lines: string[] = [];
+        let currentLine = '';
+        
+        // Definir fonte antes de medir o texto
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(12);
+        
+        words.forEach(word => {
+          const testLine = currentLine ? `${currentLine} ${word}` : word;
+          const testWidth = pdf.getTextWidth(testLine);
+          
+          if (testWidth <= maxWidth) {
+            currentLine = testLine;
+          } else {
+            if (currentLine) {
+              lines.push(currentLine);
+              currentLine = word;
+            } else {
+              // Palavra muito longa, forçar quebra
+              lines.push(word);
+            }
+          }
+        });
+        
+        if (currentLine) {
+          lines.push(currentLine);
+        }
+        
+        return lines;
+      };
+      
+      const lines = breakTextIntoLines(insight.content, textWidth);
+      
+      // Calcular altura necessária para todas as linhas
+      const lineHeight = 7; // Aumentado de 6 para 7
+      const linesHeight = lines.length * lineHeight;
+      const spaceAfterInsight = 12; // Espaço após cada insight
+      
+      // Verificar se as linhas cabem na página atual (com margem de segurança)
+      if (currentY + linesHeight + spaceAfterInsight > pageHeight - margin - 15) {
         pdf.addPage();
         currentY = margin;
+        // Redefinir fonte após nova página
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(12);
       }
       
-      // Adicionar as linhas
+      // Adicionar as linhas com espaçamento adequado e alinhamento fixo
       lines.forEach((line: string) => {
-        pdf.text(line, margin, currentY);
-        currentY += 6;
+        // Verificar novamente se a linha atual cabe na página
+        if (currentY + lineHeight > pageHeight - margin - 15) {
+          pdf.addPage();
+          currentY = margin;
+          // Redefinir fonte após nova página
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(12);
+        }
+        
+        // Garantir que a fonte esteja definida antes de adicionar o texto
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(12);
+        
+        // Garantir que o texto mantenha o alinhamento com a margem fixa
+        pdf.text(line.trim(), textStartX, currentY - 2);
+        currentY += lineHeight;
       });
       
-      currentY += 8; // Espaço entre insights
+      currentY += spaceAfterInsight; // Espaço entre insights
     });
 
     // Rodapé
@@ -519,7 +637,8 @@ export const exportInsightsToPDF = async (elementId: string, filename: string) =
       pdf.setPage(i);
       pdf.setFontSize(8);
       pdf.setFont('helvetica', 'normal');
-      pdf.text(`Página ${i} de ${totalPages}`, pageWidth - margin - 20, pageHeight - 10);
+      // Posicionar o rodapé respeitando as margens
+      pdf.text(`Página ${i} de ${totalPages}`, pageWidth - margin - 30, pageHeight - margin);
     }
 
     // Salvar PDF
@@ -544,19 +663,79 @@ export const exportCanvasToPDF = async (elementId: string, filename: string) => 
       return;
     }
 
+    // Calcular dimensões reais da página completa
+    const fullWidth = Math.max(
+      document.documentElement.scrollWidth,
+      document.body.scrollWidth,
+      window.innerWidth
+    );
+    const fullHeight = Math.max(
+      document.documentElement.scrollHeight,
+      document.body.scrollHeight,
+      window.innerHeight
+    );
+
     // Configurações do html2canvas para captura de alta qualidade
     const canvas = await html2canvas(appElement as HTMLElement, {
-      scale: 2, // Alta resolução
+      scale: 2, // Escala para qualidade
       useCORS: true, // Permitir imagens de outras origens
       allowTaint: true, // Permitir elementos "tainted"
-      backgroundColor: null, // Manter fundo transparente se necessário
+      backgroundColor: '#1E1E2F', // Fundo escuro padrão
       logging: false, // Desabilitar logs
-      width: appElement.scrollWidth,
-      height: appElement.scrollHeight,
+      width: fullWidth,
+      height: fullHeight,
       scrollX: 0,
       scrollY: 0,
-      windowWidth: window.innerWidth,
-      windowHeight: window.innerHeight,
+      windowWidth: fullWidth,
+      windowHeight: fullHeight,
+      letterRendering: true, // Melhor renderização de texto
+      foreignObjectRendering: false, // Evitar problemas de posicionamento
+      imageTimeout: 0, // Sem timeout para imagens
+      removeContainer: true, // Remover container temporário
+      proxy: undefined, // Evitar problemas de proxy
+      onclone: (doc) => {
+        // Garantir que o documento clonado tenha as dimensões corretas
+        doc.body.style.width = `${fullWidth}px`;
+        doc.body.style.height = `${fullHeight}px`;
+        doc.documentElement.style.width = `${fullWidth}px`;
+        doc.documentElement.style.height = `${fullHeight}px`;
+        
+        // Aplicar correções sutis para alinhamento vertical de texto
+        doc.body.style.lineHeight = '1.25';
+        
+        // Aplicar correções específicas para elementos de texto
+        const textElements = doc.querySelectorAll('body, p, li, h1, h2, h3, h4, h5, h6, div, span');
+        textElements.forEach((el: any) => {
+          el.style.lineHeight = '1.25';
+          el.style.verticalAlign = 'baseline';
+          // Compensação sutil para baseline
+          el.style.transform = 'translateY(-0.5px)';
+        });
+        
+        // Definir vertical-align para imagens e ícones
+        const inlineElements = doc.querySelectorAll('img, svg, i, .icon');
+        inlineElements.forEach((el: any) => {
+          el.style.verticalAlign = 'text-top';
+        });
+        
+        // Aplicar estilos de renderização otimizados
+        const allElements = doc.querySelectorAll('*');
+        allElements.forEach((el: any) => {
+          if (el.textContent && el.textContent.trim()) {
+            el.style.textRendering = 'optimizeLegibility';
+            el.style.fontKerning = 'normal';
+            el.style.webkitFontSmoothing = 'subpixel-antialiased';
+          }
+        });
+        
+        // Forçar recálculo de layout
+        doc.body.offsetHeight;
+        
+        // Aguardar renderização
+        setTimeout(() => {
+          doc.body.offsetHeight;
+        }, 100);
+      },
       ignoreElements: (element) => {
         // Ignorar modais e elementos flutuantes
         return element.classList.contains('modal') || 
@@ -565,26 +744,16 @@ export const exportCanvasToPDF = async (elementId: string, filename: string) => 
       }
     });
 
-    // Criar PDF em formato paisagem A4
-    const pdf = new jsPDF('l', 'mm', 'a4');
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
+    // Criar PDF com dimensões dinâmicas baseadas no conteúdo
+    const pdf = new jsPDF({
+      orientation: fullWidth > fullHeight ? 'landscape' : 'portrait',
+      unit: 'px',
+      format: [fullWidth, fullHeight]
+    });
     
-    // Calcular dimensões da imagem para caber na página
-    const imgWidth = canvas.width;
-    const imgHeight = canvas.height;
-    const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
-    
-    const scaledWidth = imgWidth * ratio;
-    const scaledHeight = imgHeight * ratio;
-    
-    // Centralizar a imagem na página
-    const x = (pageWidth - scaledWidth) / 2;
-    const y = (pageHeight - scaledHeight) / 2;
-    
-    // Converter canvas para imagem e adicionar ao PDF
+    // Adicionar a imagem ocupando toda a página
     const imgData = canvas.toDataURL('image/png', 1.0);
-    pdf.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight);
+    pdf.addImage(imgData, 'PNG', 0, 0, fullWidth, fullHeight);
     
     // Salvar PDF
     pdf.save(`${filename}.pdf`);
