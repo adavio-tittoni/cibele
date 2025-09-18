@@ -49,7 +49,30 @@ const DividedBox: React.FC<DividedBoxProps> = ({
         >
           <h3 className={`font-bold ${isCentral ? 'text-center' : ''} mb-4 mt-4 text-sm leading-tight px-1`}>{title1}</h3>
           <div className="flex-grow pt-1 text-xs px-1">
-            {fields[id1]?.content ? (
+            {fields[id1]?.bulletPoints && fields[id1].bulletPoints!.length > 0 ? (
+              <div className="space-y-2">
+                {fields[id1].bulletPoints!.map((bullet) => (
+                  <div key={bullet.id} className="flex items-start gap-2">
+                    <div 
+                      className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                        bullet.color === 'blue' ? 'bg-blue-500' :
+                        bullet.color === 'red' ? 'bg-red-500' :
+                        bullet.color === 'purple' ? 'bg-purple-500' :
+                        'bg-gray-400'
+                      }`}
+                    />
+                    <span className={`text-xs ${
+                      bullet.color === 'blue' ? 'text-blue-400' :
+                      bullet.color === 'red' ? 'text-red-400' :
+                      bullet.color === 'purple' ? 'text-purple-400' :
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      {bullet.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : fields[id1]?.content ? (
               <div 
                 className="whitespace-pre-wrap break-words overflow-y-auto max-h-[150px] scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900 leading-relaxed"
                 dangerouslySetInnerHTML={{ 
@@ -78,7 +101,30 @@ const DividedBox: React.FC<DividedBoxProps> = ({
         >
           <h3 className={`font-bold ${isCentral ? 'text-center' : ''} mb-3 mt-6 text-sm leading-tight px-1`}>{title2}</h3>
           <div className="flex-grow pt-1 text-xs px-1">
-            {fields[id2]?.content ? (
+            {fields[id2]?.bulletPoints && fields[id2].bulletPoints!.length > 0 ? (
+              <div className="space-y-2">
+                {fields[id2].bulletPoints!.map((bullet) => (
+                  <div key={bullet.id} className="flex items-start gap-2">
+                    <div 
+                      className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                        bullet.color === 'blue' ? 'bg-blue-500' :
+                        bullet.color === 'red' ? 'bg-red-500' :
+                        bullet.color === 'purple' ? 'bg-purple-500' :
+                        'bg-gray-400'
+                      }`}
+                    />
+                    <span className={`text-xs ${
+                      bullet.color === 'blue' ? 'text-blue-400' :
+                      bullet.color === 'red' ? 'text-red-400' :
+                      bullet.color === 'purple' ? 'text-purple-400' :
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      {bullet.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : fields[id2]?.content ? (
               <div 
                 className="whitespace-pre-wrap break-words overflow-y-auto max-h-[150px] scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900 leading-relaxed"
                 dangerouslySetInnerHTML={{ 

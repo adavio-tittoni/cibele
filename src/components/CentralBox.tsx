@@ -32,7 +32,30 @@ const CentralBox: React.FC<CentralBoxProps> = ({ title, id }) => {
         onClick={() => setActiveField(id)}
       >
         <div className="h-full flex items-center justify-center px-2">
-          {fields[id]?.content ? (
+          {fields[id]?.bulletPoints && fields[id].bulletPoints!.length > 0 ? (
+            <div className="space-y-2 w-full">
+              {fields[id].bulletPoints!.map((bullet) => (
+                <div key={bullet.id} className="flex items-start gap-2 justify-center">
+                  <div 
+                    className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                      bullet.color === 'blue' ? 'bg-blue-500' :
+                      bullet.color === 'red' ? 'bg-red-500' :
+                      bullet.color === 'purple' ? 'bg-purple-500' :
+                      'bg-gray-400'
+                    }`}
+                  />
+                  <span className={`text-xs text-center ${
+                    bullet.color === 'blue' ? 'text-blue-400' :
+                    bullet.color === 'red' ? 'text-red-400' :
+                    bullet.color === 'purple' ? 'text-purple-400' :
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    {bullet.text}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : fields[id]?.content ? (
             <div 
               className="text-center whitespace-pre-wrap text-xs break-words overflow-y-auto max-h-[100px] scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900 leading-relaxed"
               dangerouslySetInnerHTML={{ 

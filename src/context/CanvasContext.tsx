@@ -1,14 +1,22 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
+interface BulletPoint {
+  id: string;
+  text: string;
+  color?: 'blue' | 'red' | 'purple';
+}
+
 interface FieldData {
   content: string;
   color?: 'blue' | 'red' | 'purple';
+  bulletPoints?: BulletPoint[];
 }
 
 interface CanvasContextType {
   fields: Record<string, FieldData>;
   updateField: (id: string, content: string) => void;
   updateFieldColor: (id: string, color?: 'blue' | 'red' | 'purple') => void;
+  updateFieldBulletPoints: (id: string, bulletPoints: BulletPoint[]) => void;
   activeField: string | null;
   setActiveField: (id: string | null) => void;
   resetFields: () => void;
@@ -42,6 +50,7 @@ const CanvasContext = createContext<CanvasContextType>({
   fields: defaultFields,
   updateField: () => {},
   updateFieldColor: () => {},
+  updateFieldBulletPoints: () => {},
   activeField: null,
   setActiveField: () => {},
   resetFields: () => {},
@@ -105,6 +114,13 @@ export const CanvasProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }));
   };
 
+  const updateFieldBulletPoints = (id: string, bulletPoints: BulletPoint[]) => {
+    setFields(prev => ({
+      ...prev,
+      [id]: { ...prev[id], bulletPoints },
+    }));
+  };
+
   const resetFields = () => {
     setFields(defaultFields);
     localStorage.removeItem('innovAI-canvas');
@@ -118,7 +134,8 @@ export const CanvasProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     <CanvasContext.Provider value={{ 
       fields, 
       updateField,
-      updateFieldColor, 
+      updateFieldColor,
+      updateFieldBulletPoints, 
       activeField, 
       setActiveField, 
       resetFields,
