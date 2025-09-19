@@ -28,10 +28,8 @@ public/*.mp4
 *.webm
 *.ogg
 
-# Cache and build files
-.cache
+# Build and deployment cache (ignore for deploy)
 .parcel-cache
-.vite
 .turbo
 .next
 .nuxt
@@ -39,7 +37,7 @@ public/*.mp4
 .vercel
 .netlify
 
-# Browser cache and temp files
+# Build temp files
 .tmp
 .temp
 *.tmp
@@ -66,9 +64,6 @@ coverage
 
 # Dependency directories
 jspm_packages/
-
-# Optional npm cache directory
-.npm
 
 # Optional eslint cache
 .eslintcache
