@@ -1,0 +1,23 @@
+INSTRUÇÕES PARA ADICIONAR OS VÍDEOS:
+
+1. Coloque seus arquivos de vídeo nesta pasta (public/) com os nomes:
+   - "video-aplicacao-interna.mp4" (para aplicação interna)
+   - "video-aplicacao-externa.mp4" (para aplicação externa)
+
+2. Formatos suportados:
+   - MP4 (recomendado)
+   - WebM
+   - OGG
+
+3. Recomendações:
+   - Resolução: 1920x1080 ou menor para melhor performance
+   - Duração: Mantenha os vídeos concisos
+   - Tamanho: Tente manter abaixo de 50MB cada para carregamento rápido
+
+4. Após adicionar os vídeos, você pode deletar este arquivo (video-placeholder.txt)
+
+FUNCIONALIDADES:
+- Modal de vídeo abre automaticamente quando o usuário clica no checkbox "Aplicação Interna"
+- Modal de vídeo abre automaticamente quando o usuário clica no checkbox "Aplicação Externa"
+- Cada checkbox tem seu próprio vídeo específico
+- Os modais são independentes e podem ser abertos separadamente

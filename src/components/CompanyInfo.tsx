@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useCanvas } from '../context/CanvasContext';
 import { Upload } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
+import VideoModal from './VideoModal';
 
 interface CompanyInfoProps {
   title: string;
@@ -13,6 +14,8 @@ const CompanyInfo: React.FC<CompanyInfoProps> = ({ title, id }) => {
   const logoId = `${id}-logo`;
   const [isInternalApp, setIsInternalApp] = useState(false);
   const [isExternalApp, setIsExternalApp] = useState(false);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [isExternalVideoModalOpen, setIsExternalVideoModalOpen] = useState(false);
 
   const getTextColorClass = (color?: string) => {
     switch (color) {
@@ -32,6 +35,20 @@ const CompanyInfo: React.FC<CompanyInfoProps> = ({ title, id }) => {
         updateField(logoId, result);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleInternalAppClick = () => {
+    setIsInternalApp(!isInternalApp);
+    if (!isInternalApp) {
+      setIsVideoModalOpen(true);
+    }
+  };
+
+  const handleExternalAppClick = () => {
+    setIsExternalApp(!isExternalApp);
+    if (!isExternalApp) {
+      setIsExternalVideoModalOpen(true);
     }
   };
 
@@ -69,7 +86,7 @@ const CompanyInfo: React.FC<CompanyInfoProps> = ({ title, id }) => {
             <input
               type="checkbox"
               checked={isInternalApp}
-              onChange={(e) => setIsInternalApp(e.target.checked)}
+              onChange={handleInternalAppClick}
               style={{ display: 'none' }}
             />
             <div 
@@ -119,7 +136,7 @@ const CompanyInfo: React.FC<CompanyInfoProps> = ({ title, id }) => {
             <input
               type="checkbox"
               checked={isExternalApp}
-              onChange={(e) => setIsExternalApp(e.target.checked)}
+              onChange={handleExternalAppClick}
               style={{ display: 'none' }}
             />
             <div 
@@ -220,6 +237,22 @@ const CompanyInfo: React.FC<CompanyInfoProps> = ({ title, id }) => {
         </div>
       </div>
       <h3 className={`font-bold text-center text-sm ${isDarkMode ? 'text-purple-300' : 'text-purple-600'}`}>{title}</h3>
+      
+      {/* Modal de Vídeo - Aplicação Interna */}
+      <VideoModal
+        isOpen={isVideoModalOpen}
+        onClose={() => setIsVideoModalOpen(false)}
+        videoSrc="/video-aplicacao-interna.mp4"
+        title="Vídeo - Aplicação Interna"
+      />
+      
+      {/* Modal de Vídeo - Aplicação Externa */}
+      <VideoModal
+        isOpen={isExternalVideoModalOpen}
+        onClose={() => setIsExternalVideoModalOpen(false)}
+        videoSrc="/video-aplicacao-externa.mp4"
+        title="Vídeo - Aplicação Externa"
+      />
     </div>
   );
 };
