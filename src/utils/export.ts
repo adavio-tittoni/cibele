@@ -110,15 +110,38 @@ export const exportToPDF = async (elementId: string, filename: string) => {
     // Restaurar estilos originais
     restoreStyles(element, originalStyles);
 
-    // Gerar e salvar PDF
+    // Gerar e salvar PDF em formato A4 para melhor legibilidade
     const imgData = canvas.toDataURL('image/png');
     const pdf = new jsPDF({
       orientation: 'landscape',
-      unit: 'px',
-      format: [width, height]
+      unit: 'mm',
+      format: 'a4'
     });
     
-    pdf.addImage(imgData, 'PNG', 0, 0, width, height);
+    // Dimensões A4 em mm (landscape)
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    
+    // Calcular proporção para manter aspect ratio
+    const canvasAspectRatio = canvas.width / canvas.height;
+    const pdfAspectRatio = pdfWidth / pdfHeight;
+    
+    let imgWidth = pdfWidth;
+    let imgHeight = pdfHeight;
+    let offsetX = 0;
+    let offsetY = 0;
+    
+    if (canvasAspectRatio > pdfAspectRatio) {
+      // Canvas é mais largo que o PDF
+      imgHeight = pdfWidth / canvasAspectRatio;
+      offsetY = (pdfHeight - imgHeight) / 2;
+    } else {
+      // Canvas é mais alto que o PDF
+      imgWidth = pdfHeight * canvasAspectRatio;
+      offsetX = (pdfWidth - imgWidth) / 2;
+    }
+    
+    pdf.addImage(imgData, 'PNG', offsetX, offsetY, imgWidth, imgHeight);
     pdf.save(`${filename}.pdf`);
     
   } catch (error) {
