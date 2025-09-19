@@ -1,7 +1,7 @@
 import React from 'react';
 import { Download, RefreshCw, Sun, Moon, FileSpreadsheet, Lightbulb } from 'lucide-react';
 import { useCanvas } from '../context/CanvasContext';
-import { exportToPDF, exportToPNG, exportToXLS, exportInsightsToXLS, exportInsightsToPDF, exportCanvasToPDF } from '../utils/export';
+import { exportToPDF, exportToXLS, exportInsightsToXLS, exportInsightsToPDF, exportCanvasToPDF } from '../utils/export';
 
 const Header: React.FC = () => {
   const { resetFields, isDarkMode, toggleTheme, fields } = useCanvas();
@@ -42,18 +42,6 @@ const Header: React.FC = () => {
           >
             <Download size={16} className="mr-1" />
             PDF
-          </button>
-          
-          <button
-            onClick={() => exportToPNG('canvas-container', 'innov-ai-canvas')}
-            className={`flex items-center px-3 py-2 rounded-md transition-colors ${
-              isDarkMode 
-                ? 'bg-purple-700 hover:bg-purple-600 text-white' 
-                : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
-            }`}
-          >
-            <Download size={16} className="mr-1" />
-            PNG
           </button>
           
           <button
